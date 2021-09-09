@@ -4,58 +4,49 @@
 // you can write to stdout for debugging purposes, e.g.
 // cout << "this is a debug message" << endl;
 #include <vector>
+#include <queue>
 
 int solution(vector<int>& A) {
     // write your code in C++14 (g++ 6.2.0)
+
     int N = (int)A.size();
-    vector<int> fib(27, 0);
-    fib[1] = 1;
-    for (int i = 2; i < 27; i++)
-    {
-        fib[i] = fib[i - 1] + fib[i - 2];
-    }
+    if (N == 0)
+        return 1;
 
-    vector<int> reachable(N, -1);
-    for (int i = 0; i < 27; i++)
-    {
-        if (fib[i] - 1 < N && A[fib[i] - 1] == 1)
-        {
-            reachable[fib[i] - 1] = 1;
-        }
-    }
+    vector<int> fib;
+    fib.push_back(1); fib.push_back(1);
 
-    for (int i = 0; i < N; i++)
+    for (int i = 2; fib[fib.size() - 1] <= N + 1; i++)
     {
-        if (A[i] == 1 && reachable[i] < 0)
+        fib.push_back(fib[i - 1] + fib[i - 2]);
+    }
+    queue<pair<int, int>> q;
+    vector<bool> check(N + 1, false);
+    q.push({ -1,0 });
+
+    while (!q.empty())
+    {
+        pair<int, int> current = q.front();
+        q.pop();
+        for (int i = 0; i < (int)fib.size(); i++)
         {
-            int min = N + 1;
-            int minIdx = -1;
-            for (int j = 0; j < 27; j++)
+            int next = current.first + fib[i];
+
+            if (next == N)
             {
-                int pre = i - fib[j];
-                if (pre < 0 || reachable[pre] < 0)
-                    continue;
-
-                if (min > reachable[pre])
+                return current.second + 1;
+            }
+            else if (next < N && next >= 0)
+            {
+                if (A[next] == 1 && !check[next])
                 {
-                    min = reachable[pre];
-                    minIdx = pre;
+                    check[next] = true;
+                    q.push({ next, current.second + 1 });
                 }
             }
-            if (minIdx != -1)
-                reachable[i] = min + 1;
         }
     }
-    int result = -1;
-    for (int i = 0; i < N; i++)
-    {
-        if (reachable[i] != -1)
-        {
-            if (result == -1)
-                result = 0;
-
-            result += reachable[i];
-        }
-    }
-    return result;
+    return -1;
 }
+
+//https://app.codility.com/demo/results/training9P6W5S-NH9/
